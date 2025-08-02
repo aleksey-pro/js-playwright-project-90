@@ -1,21 +1,24 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
+import { useEffect, useState, useRef } from 'react'
 import './App.css'
 
+const rightData = {
+  name: "anxieter",
+  password: "123",
+}
+
 function App() {
-  const [count, setCount] = useState(0)
+  const [count, setCount] = useState(0);
+  const [loggedIn, setLoggedIn] = useState(false);
+  const [loggedData, setLoggedData] = useState({});
+
+  const formRef = useRef();
+
+  useEffect(() => {
+    setLoggedIn(loggedData.name === rightData.name && loggedData.password === rightData.password);
+  }, [loggedData]);
 
   return (
     <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
       <h1>Vite + React</h1>
       <div className="card">
         <button onClick={() => setCount((count) => count + 1)}>
@@ -25,9 +28,35 @@ function App() {
           Edit <code>src/App.jsx</code> and save to test HMR
         </p>
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <div>
+        <form 
+          ref={formRef}
+          onSubmit={(event) => {
+            event.preventDefault();
+            const formData = new FormData(formRef.current);
+            if (loggedIn) {
+              formRef.current.reset();
+              setLoggedIn(false);
+            } else {
+              setLoggedData(Object.fromEntries(formData.entries()));
+            }
+          }}
+          style={{ display: "flex", gap: "20px", flexDirection: "column" }}
+        >
+          <div>
+            <label htmlFor="name">Имя пользователя</label>
+            <input style={{ marginLeft: "10px" }} type="text" name="name" id="name"/>
+          </div>
+          <div>
+            <label htmlFor="password">Пароль</label>
+            <input style={{ marginLeft: "10px" }} type="text" name="password" id="password"/>
+          </div>
+          <button type="submit">
+            {loggedIn ? "Выйти" : "Войти"}
+          </button>
+        </form>
+      </div>
+      <div role="status">{loggedIn ? "Вы вошли" : "Вы разлогинены"}</div>
     </>
   )
 }

@@ -1,4 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, Page } from '@playwright/test';
+import { describe } from 'node:test';
+import AppPageClass from '../src/utils/AppPage';
 
 test('It renders successfully', async ({ page }) => {
   await page.goto('http://localhost:5173/');
@@ -6,12 +8,40 @@ test('It renders successfully', async ({ page }) => {
   await expect(appRoot).toBeVisible();
 });
 
-// test('get started link', async ({ page }) => {
-//   await page.goto('https://playwright.dev/');
+describe('Test login-logout', () => {
+  const userData = {
+    username: 'anxieter',
+    password: '123'
+  }
 
-//   // Click the get started link.
-//   await page.getByRole('link', { name: 'Get started' }).click();
+  let appPageClass: AppPageClass;
 
-//   // Expects page to have a heading with the name of Installation.
-//   await expect(page.getByRole('heading', { name: 'Installation' })).toBeVisible();
-// });
+  test.beforeEach(async ({ page }) => {
+    appPageClass = new AppPageClass(page);
+    await appPageClass.goto();
+  });
+
+  test('Login correctly', async () => {    
+    await appPageClass.fillByLabel('Имя пользователя', userData.username);
+    await appPageClass.fillByLabel('Пароль', userData.password);
+
+    await appPageClass.clickSubmitButton();
+
+    await expect(appPageClass.loginBtn).toHaveText('Выйти');
+    await expect(appPageClass.infoBlock).toHaveText('Вы вошли');
+  });
+
+  test('Logout correctly', async () => {
+
+    await appPageClass.clickSubmitButton();
+
+    await expect(appPageClass.loginBtn).toHaveText('Войти');
+    await expect(appPageClass.infoBlock).toHaveText('Вы разлогинены');
+  });
+
+  test.afterEach(async ({ page }) => {
+    await page.close();
+  });
+})
+
+
